@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTA Commission Calculator — Social Spoon</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --cream: #F7F4EF;
+    --ink: #1A1814;
+    --ink-muted: #6B6760;
+    --ink-light: #A8A49E;
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-dark: #0F6E56;
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --border: rgba(26,24,20,0.10);
+    --border-strong: rgba(26,24,20,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  /* HEADER */
+  .header {
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeUp .6s ease forwards;
+  }
+
+  .brand {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand::before {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 1.5px;
+    background: var(--teal);
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    letter-spacing: -.02em;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--teal);
+  }
+
+  .subtitle {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--ink-muted);
+    line-height: 1.65;
+    max-width: 520px;
+  }
+
+  /* CALCULATOR CARD */
+  .calc-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp .6s ease .15s forwards;
+  }
+
+  .calc-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 1.5rem;
+  }
+
+  /* SLIDERS */
+  .input-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .input-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: .5rem;
+  }
+
+  .input-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .input-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--ink);
+    min-width: 80px;
+    text-align: right;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: var(--border-strong);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 3px solid var(--cream);
+    box-shadow: 0 0 0 1.5px var(--ink);
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+
+  input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 1.5px var(--teal);
+    background: var(--teal);
+  }
+
+  input[type=range]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 3px solid var(--cream);
+    box-shadow: 0 0 0 1.5px var(--ink);
+    cursor: pointer;
+  }
+
+  .range-hints {
+    display: flex;
+    justify-content: space-between;
+    margin-top: .3rem;
+  }
+
+  .range-hint {
+    font-size: 11px;
+    color: var(--ink-light);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.75rem 0;
+  }
+
+  /* RESULTS */
+  .results {
+    opacity: 0;
+    animation: fadeUp .6s ease .3s forwards;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .result-card {
+    border-radius: 12px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-card.primary {
+    background: var(--ink);
+    grid-column: 1 / -1;
+  }
+
+  .result-card.recovery {
+    background: var(--teal-light);
+  }
+
+  .result-card.monthly {
+    background: var(--amber-light);
+  }
+
+  .result-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: .5rem;
+  }
+
+  .result-card.primary .result-label { color: rgba(255,255,255,.5); }
+  .result-card.recovery .result-label { color: #085041; }
+  .result-card.monthly .result-label { color: #633806; }
+
+  .result-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1;
+    letter-spacing: -.02em;
+    transition: all .4s cubic-bezier(.25,.46,.45,.94);
+  }
+
+  .result-card.primary .result-number { color: #fff; }
+  .result-card.recovery .result-number { color: #085041; }
+  .result-card.monthly .result-number { color: #633806; }
+
+  .result-sub {
+    font-size: 13px;
+    font-weight: 300;
+    margin-top: .35rem;
+    line-height: 1.45;
+  }
+
+  .result-card.primary .result-sub { color: rgba(255,255,255,.55); }
+  .result-card.recovery .result-sub { color: #0F6E56; }
+  .result-card.monthly .result-sub { color: #854F0B; }
+
+  /* INSIGHT BOX */
+  .insight {
+    background: var(--coral-light);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .insight-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--coral);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .insight-icon svg { width: 16px; height: 16px; }
+
+  .insight-text {
+    font-size: 13px;
+    color: #712B13;
+    line-height: 1.6;
+  }
+
+  .insight-text strong {
+    font-weight: 500;
+    display: block;
+    margin-bottom: 2px;
+    font-size: 14px;
+  }
+
+  /* BREAKDOWN TABLE */
+  .breakdown {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp .6s ease .45s forwards;
+  }
+
+  .breakdown-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 1.25rem;
+  }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .65rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .breakdown-row:last-child { border-bottom: none; }
+
+  .breakdown-label {
+    font-size: 14px;
+    color: var(--ink-muted);
+  }
+
+  .breakdown-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    color: var(--ink);
+  }
+
+  .breakdown-row.highlight .breakdown-label {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .breakdown-row.highlight .breakdown-val {
+    color: var(--coral);
+    font-size: 18px;
+  }
+
+  /* CTA */
+  .cta-block {
+    background: var(--ink);
+    border-radius: 16px;
+    padding: 2rem;
+    opacity: 0;
+    animation: fadeUp .6s ease .6s forwards;
+  }
+
+  .cta-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+    margin-bottom: .75rem;
+  }
+
+  .cta-heading {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: #fff;
+    line-height: 1.25;
+    margin-bottom: .75rem;
+    letter-spacing: -.02em;
+  }
+
+  .cta-heading em { font-style: italic; color: #5DCAA5; }
+
+  .cta-body {
+    font-size: 14px;
+    font-weight: 300;
+    color: rgba(255,255,255,.6);
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    background: var(--teal);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: .8rem 1.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background .2s ease, transform .15s ease;
+    letter-spacing: .01em;
+  }
+
+  .cta-btn:hover {
+    background: var(--teal-dark);
+    transform: translateY(-1px);
+  }
+
+  .cta-note {
+    font-size: 12px;
+    color: rgba(255,255,255,.3);
+    margin-top: .75rem;
+  }
+
+  /* WHAT YOU GET LIST */
+  .gets-list {
+    list-style: none;
+    margin-bottom: 1.5rem;
+  }
+
+  .gets-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 300;
+    color: rgba(255,255,255,.65);
+    margin-bottom: .6rem;
+    line-height: 1.5;
+  }
+
+  .gets-list li::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-light);
+    opacity: 0;
+    animation: fadeUp .5s ease .75s forwards;
+  }
+
+  .footer a {
+    color: var(--teal);
+    text-decoration: none;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .num-change {
+    animation: numPop .3s cubic-bezier(.25,.46,.45,.94);
+  }
+
+  @keyframes numPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 520px) {
+    .results-grid { grid-template-columns: 1fr; }
+    .result-card.primary { grid-column: 1; }
+    .page { padding: 2rem 1.25rem 4rem; }
+    .calc-card, .breakdown { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">Social Spoon</div>
+    <h1>How much is your hotel <em>really</em> paying OTAs?</h1>
+    <p class="subtitle">Adjust the sliders below to see your exact annual OTA commission cost — and how much you could recover with a direct booking email strategy.</p>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div class="calc-card">
+    <div class="calc-title">Your hotel details</div>
+
+    <div class="input-group">
+      <div class="input-row">
+        <label class="input-label">Number of rooms</label>
+        <span class="input-value" id="val-rooms">30</span>
+      </div>
+      <input type="range" id="rooms" min="5" max="150" step="1" value="30">
+      <div class="range-hints"><span class="range-hint">5</span><span class="range-hint">150</span></div>
+    </div>
+
+    <div class="input-group">
+      <div class="input-row">
+        <label class="input-label">Average daily rate (ADR)</label>
+        <span class="input-value" id="val-adr">£280</span>
+      </div>
+      <input type="range" id="adr" min="50" max="1000" step="5" value="280">
+      <div class="range-hints"><span class="range-hint">£50</span><span class="range-hint">£1,000</span></div>
+    </div>
+
+    <div class="input-group">
+      <div class="input-row">
+        <label class="input-label">Average occupancy rate</label>
+        <span class="input-value" id="val-occ">68%</span>
+      </div>
+      <input type="range" id="occ" min="20" max="100" step="1" value="68">
+      <div class="range-hints"><span class="range-hint">20%</span><span class="range-hint">100%</span></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="input-group">
+      <div class="input-row">
+        <label class="input-label">Bookings made via OTAs</label>
+        <span class="input-value" id="val-ota-pct">45%</span>
+      </div>
+      <input type="range" id="ota-pct" min="5" max="95" step="1" value="45">
+      <div class="range-hints"><span class="range-hint">5%</span><span class="range-hint">95%</span></div>
+    </div>
+
+    <div class="input-group">
+      <div class="input-row">
+        <label class="input-label">OTA commission rate</label>
+        <span class="input-value" id="val-commission">18%</span>
+      </div>
+      <input type="range" id="commission" min="10" max="30" step="1" value="18">
+      <div class="range-hints"><span class="range-hint">10%</span><span class="range-hint">30%</span></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results">
+    <div class="results-grid">
+      <div class="result-card primary">
+        <div class="result-label">Your annual OTA commission cost</div>
+        <div class="result-number" id="annual-cost">£0</div>
+        <div class="result-sub" id="annual-sub">Based on your current numbers</div>
+      </div>
+      <div class="result-card recovery">
+        <div class="result-label">Recovery potential</div>
+        <div class="result-number" id="recovery">£0</div>
+        <div class="result-sub">Shifting 20% of OTA bookings to direct</div>
+      </div>
+      <div class="result-card monthly">
+        <div class="result-label">Monthly OTA cost</div>
+        <div class="result-number" id="monthly-cost">£0</div>
+        <div class="result-sub">Every single month, without fail</div>
+      </div>
+    </div>
+
+    <div class="insight" id="insight-box">
+      <div class="insight-icon">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 2L9.5 6H14L10.5 8.5L12 12.5L8 10L4 12.5L5.5 8.5L2 6H6.5L8 2Z" fill="white"/>
+        </svg>
+      </div>
+      <div class="insight-text" id="insight-text">
+        <strong>Adjust the sliders to see your number</strong>
+        Move the sliders above to match your hotel's figures.
+      </div>
+    </div>
+  </div>
+
+  <!-- BREAKDOWN -->
+  <div class="breakdown">
+    <div class="breakdown-title">How we calculated this</div>
+    <div class="breakdown-row">
+      <span class="breakdown-label">Total room nights per year</span>
+      <span class="breakdown-val" id="bd-nights">—</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="breakdown-label">Total annual room revenue</span>
+      <span class="breakdown-val" id="bd-revenue">—</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="breakdown-label">OTA-booked revenue</span>
+      <span class="breakdown-val" id="bd-ota-rev">—</span>
+    </div>
+    <div class="breakdown-row highlight">
+      <span class="breakdown-label">OTA commission paid</span>
+      <span class="breakdown-val" id="bd-commission">—</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="breakdown-label">20% shift to direct = annual saving</span>
+      <span class="breakdown-val" id="bd-saving">—</span>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div style="text-align:center;padding:2rem 1rem;">
+    <p style="font-size:15px;color:#6B6760;line-height:1.65;">Got questions about your numbers?<br>Email me at <a href="mailto:skanbi@socialspoonagency.com" style="color:#1D9E75;text-decoration:none;font-weight:500;">skanbi@socialspoonagency.com</a> — I read and reply to every one personally.</p>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>Built by <a href="#">Social Spoon</a> — email marketing for boutique hotels.<br>
+    Questions? <a href="mailto:skanbi@socialspoonagency.com">skanbi@socialspoonagency.com</a></p>
+  </div>
+
+</div>
+
+<script>
+  const fmt = (n) => '£' + Math.round(n).toLocaleString('en-GB');
+  const fmtNum = (n) => Math.round(n).toLocaleString('en-GB');
+
+  const sliders = {
+    rooms: { el: document.getElementById('rooms'), display: document.getElementById('val-rooms'), format: v => v },
+    adr: { el: document.getElementById('adr'), display: document.getElementById('val-adr'), format: v => '£' + v },
+    occ: { el: document.getElementById('occ'), display: document.getElementById('val-occ'), format: v => v + '%' },
+    'ota-pct': { el: document.getElementById('ota-pct'), display: document.getElementById('val-ota-pct'), format: v => v + '%' },
+    commission: { el: document.getElementById('commission'), display: document.getElementById('val-commission'), format: v => v + '%' }
+  };
+
+  function getVals() {
+    return {
+      rooms: parseInt(sliders.rooms.el.value),
+      adr: parseInt(sliders.adr.el.value),
+      occ: parseInt(sliders.occ.el.value) / 100,
+      otaPct: parseInt(sliders['ota-pct'].el.value) / 100,
+      commission: parseInt(sliders.commission.el.value) / 100
+    };
+  }
+
+  function animateNum(el) {
+    el.classList.remove('num-change');
+    void el.offsetWidth;
+    el.classList.add('num-change');
+  }
+
+  function getInsight(annualCost, rooms, adr) {
+    if (annualCost < 5000) return { title: 'Your OTA cost is relatively low', body: 'Even so, every pound paid in commission is a pound that could be reinvested in your guest experience — or your pocket.' };
+    if (annualCost < 20000) return { title: 'You\'re paying ' + fmt(annualCost / 12) + ' every month to OTAs', body: 'That\'s a part-time member of staff, a full rebrand, or a serious marketing budget. A direct booking email strategy typically costs a fraction of this.' };
+    if (annualCost < 50000) return { title: 'That\'s ' + fmt(annualCost) + ' leaving your business every year', body: 'For a ' + rooms + '-room hotel at £' + adr + ' ADR, a 10% shift to direct bookings recovers ' + fmt(annualCost * 0.1) + '/year. Email is the most cost-effective way to make that happen.' };
+    return { title: 'Over ' + fmt(annualCost) + ' a year — that\'s serious commission bleed', body: 'At this level, even a modest shift to direct bookings pays for a full email marketing retainer many times over. This is the number your OTA account manager really doesn\'t want you to see.' };
+  }
+
+  function calculate() {
+    const v = getVals();
+
+    const nightsPerYear = v.rooms * 365 * v.occ;
+    const totalRevenue = nightsPerYear * v.adr;
+    const otaRevenue = totalRevenue * v.otaPct;
+    const annualCommission = otaRevenue * v.commission;
+    const monthlyCommission = annualCommission / 12;
+    const recoveryPotential = annualCommission * 0.20;
+
+    document.getElementById('annual-cost').textContent = fmt(annualCommission);
+    document.getElementById('monthly-cost').textContent = fmt(monthlyCommission);
+    document.getElementById('recovery').textContent = fmt(recoveryPotential);
+    document.getElementById('annual-sub').textContent = fmtNum(v.rooms) + ' rooms · £' + v.adr.toLocaleString() + ' ADR · ' + Math.round(v.occ * 100) + '% occ';
+
+    animateNum(document.getElementById('annual-cost'));
+    animateNum(document.getElementById('monthly-cost'));
+    animateNum(document.getElementById('recovery'));
+
+    document.getElementById('bd-nights').textContent = fmtNum(nightsPerYear);
+    document.getElementById('bd-revenue').textContent = fmt(totalRevenue);
+    document.getElementById('bd-ota-rev').textContent = fmt(otaRevenue);
+    document.getElementById('bd-commission').textContent = fmt(annualCommission);
+    document.getElementById('bd-saving').textContent = fmt(recoveryPotential);
+
+    const insight = getInsight(annualCommission, v.rooms, v.adr);
+    document.getElementById('insight-text').innerHTML = '<strong>' + insight.title + '</strong>' + insight.body;
+
+    Object.entries(sliders).forEach(([key, s]) => {
+      s.display.textContent = s.format(s.el.value);
+    });
+  }
+
+  Object.values(sliders).forEach(s => {
+    s.el.addEventListener('input', calculate);
+  });
+
+  calculate();
+</script>
+</body>
+</html>
